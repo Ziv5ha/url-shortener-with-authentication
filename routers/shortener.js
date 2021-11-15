@@ -67,12 +67,13 @@ async function appendUrlToUser(customUrl, user){
     await user.urls.addToSet(customUrl)
 }
 
-function createUrlData(originUrl, customUrl, username){
+async function createUrlData(originUrl, customUrl, username){
     let creationDate = new Date()
-    let redirectCount = 0
+    // let redirectCount = 0
     const createdBy = username
-    const url = new Url({originUrl, customUrl, creationDate, redirectCount, createdBy})
-    url.save()
+    await Url.insertMany({originUrl, customUrl, creationDate, redirectCounter: 0, createdBy})
+    // const url = new Url({originUrl, customUrl, creationDate, redirectCount, createdBy})
+    // url.save()
 }
 
 async function updateUrlData(originUrl, customUrl, username){
