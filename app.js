@@ -1,14 +1,20 @@
+const mongoose = require('mongoose')
+require('dotenv').config()
+mongoose.connect(process.env.DATABASE).then(() => {console.log('DB connected')})
+
 const express = require("express");
 const cors = require("cors");
 const app = express();
 const shortenerRouter = require('./routers/shortener')
 const redirect = require('./routers/redirect')
 const statsRouter = require('./routers/stats')
+const userRouter = require('./routers/userRouter')
 const errorHandler = require('./middlewares/error-handler')
 // const userHandler = require('./middlewares/user-middleware')
 
 app.use(cors());
 
+app.use('/sign', userRouter)
 app.use('/r', redirect)
 app.use('/shorten', shortenerRouter)
 app.use('/stats', statsRouter)

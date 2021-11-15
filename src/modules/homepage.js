@@ -1,5 +1,7 @@
 import axios from "axios"
 import { renderS } from "./stats"
+import { serverUrl } from "../index"
+
 
 export function createElement(tag, classes, id, text){
     const elem = document.createElement(tag)
@@ -83,7 +85,7 @@ function createMain(app){
     const shortBtn = createElement('button', ['custom-url-btn'], '', 'do some magic')
     addShortnerBtnAtttibutes(shortBtn, mainUrlInput, customUrlInput)
     addChilds(optionalDiv, [customUrlInput, shortBtn])
-    const output = createElement('p', [], 'output', 'custom generated link will be shown here. example: https://zip-url.herokuapp.com/r/')
+    const output = createElement('p', [], 'output', `custom generated link will be shown here. example: ${serverUrl}r/`)
     const customLink = createElement('span', [], 'output-link', 'XXXXXXXXXX')
     output.appendChild(customLink)
     addChilds(mainDiv, [mainUrlInput, optionalDiv, output])
@@ -99,7 +101,7 @@ const sendShortening = async (mainUrlInput, customUrlInput) => {
     try {
         if (mainUrlInput){
             const response = await axios.post(
-                `https://zip-url.herokuapp.com/shorten/`, 
+                `${serverUrl}shorten/`, 
                 {originUrl: `${mainUrlInput}`, customUrl: `${customUrlInput}`},
                 {headers:{
                     username: getUser(),
@@ -107,7 +109,7 @@ const sendShortening = async (mainUrlInput, customUrlInput) => {
                 }}
             )
             const output = document.getElementById('output')
-            output.textContent = `${response.data.message} your new custom link is\nhttps://zip-url.herokuapp.com/r/`
+            output.textContent = `${response.data.message} your new custom link is\n${serverUrl}r/`
             const customLink = createElement('span', [], 'output-link', `${response.data.customUrl}`)
             output.appendChild(customLink)
         }

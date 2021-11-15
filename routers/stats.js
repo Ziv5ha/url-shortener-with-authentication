@@ -1,3 +1,6 @@
+const mongoose = require('mongoose')
+require('dotenv').config()
+mongoose.connect(process.env.DATABASE)
 const express = require('express')
 const router = express.Router()
 router.use(express.json())

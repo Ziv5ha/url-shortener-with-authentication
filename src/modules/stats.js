@@ -1,3 +1,5 @@
+import { serverUrl } from "../index"
+
 const { default: axios } = require("axios")
 const { clearRender, createLogin, createNavHead, createElement, addChilds } = require("./homepage")
 
@@ -18,7 +20,7 @@ async function generateStats(app, username){
     stats.forEach(urlObj => {
         const entry = createElement('div', ['stat-entry'])
         const originUrl = createElement('div', [], '', `Original URL: ${urlObj.originUrl}`)
-        const customUrl = createElement('div', [], '', `Custom URL: https://zip-url.herokuapp.com/r/${urlObj.customUrl}`)
+        const customUrl = createElement('div', [], '', `Custom URL: ${serverUrl}r/${urlObj.customUrl}`)
         const redirectCount = createElement('div', [], '', `used ${urlObj.redirectCount} times`)
         const creationDate = createElement('div', [], '', `Created on: ${urlObj.creationDate}`)
         addChilds(entry, [originUrl, customUrl, redirectCount, creationDate])
@@ -30,7 +32,7 @@ async function generateStats(app, username){
 async function getStats(username){
     try {
         const stats = await axios.get(
-            `https://zip-url.herokuapp.com/stats/`, 
+            `${serverUrl}stats/`, 
             {headers:{
                 username,
             }}

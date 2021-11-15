@@ -1,97 +1,85 @@
+const mongoose = require('mongoose')
+require('dotenv').config()
+mongoose.connect(process.env.DATABASE)
+const Url = require('../models/url-model')
+const User = require('../models/user-model')
 const express = require('express')
 const router = express.Router()
 router.use(express.json())
-const fs = require('fs')
 const userHandler = require('../middlewares/user-middleware')
 
 
 router.use(userHandler)
-router.post('/', function(req, res, next){
+router.post('/', async function(req, res, next){
     try {
-        console.log("right place right time");
         let message = 'URL generated!'
         const username = req.headers.username
         let {originUrl, customUrl} = req.body
-        if (!customUrl) customUrl = randomUrl()
-        if (testShortUrl(customUrl)) {
-            customUrl = randomUrl()
+        if (!customUrl) customUrl = await randomUrl()
+        if (await testShortUrl(customUrl)) {
+            customUrl = await randomUrl()
             message = "sorry, the custom URL you wanted is taken... here's your randomly generated URL"
         }
-        let urlObj = createUrlObj(originUrl, customUrl)
-        if (fs.existsSync(`./users`)) {
-            if (fs.existsSync(`./users/${username}.json`)) { //if the user exists update his json file
-                if (testOriginUrlInUser(originUrl, username)){
-                    appendUrlObjToUser(urlObj, username)
-                    res.send(JSON.stringify({message, customUrl: customUrl}))
-                    return
-                } else {
-                    appendUrlObjToUser(urlObj, username)
-                }
-            } else { //if the user is new create a new json file
-                fs.writeFileSync(`./users/${username}.json`, JSON.stringify([urlObj]))
+        const user = await User.findOne({username})
+        if (user){
+            const existsInUser = await testOriginUrlInUser(originUrl, user)
+            if (existsInUser >= 0){
+                console.log('updating');
+                updateUrlData(originUrl, customUrl, username)
+                updateUrlInUser(customUrl, existsInUser, user)
+            } else {
+                console.log('adding');
+                createUrlData(originUrl, customUrl, username)
+                appendUrlToUser(customUrl, user)
             }
-        } else {
-            fs.mkdirSync(`./users`) // create users dir
-            fs.writeFileSync(`./users/${username}.json`, JSON.stringify([urlObj])) //create user json with the url
         }
+        user.save()
         res.send(JSON.stringify({message, customUrl: customUrl}))
     } catch (error) {
         console.log(error)
         next(error)
     }
 })
-function randomUrl(){
+async function randomUrl(){
     let url = ''
     while (url.length < 10){
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
         url += chars[Math.floor(Math.random()*chars.length)]
     }
-    if (testShortUrl(url)) randomUrl()
+    if (await testShortUrl(url)) randomUrl()
     return url
 }
-function testShortUrl(urlToTest){
-    let used = false
-    if (fs.existsSync(`./users`)){
-        const dirArr = fs.readdirSync('./users')
-        for (const jsonFile of dirArr) {
-            const fileArr = JSON.parse(fs.readFileSync(`./users/${jsonFile}`))
-            fileArr.forEach(urlObj => {
-                if (urlObj.customUrl === urlToTest) {
-                    used = true
-                }
-            })
-        }
-    }
+async function testShortUrl(urlToTest){
+    const used = await Url.findOne({customUrl: urlToTest})
     if (used) return true
     return false
 }
-function testOriginUrlInUser(originUrl, username){
-    let used = false
-    if (fs.existsSync(`./users/${username}.json`)){
-        const fileArr = JSON.parse(fs.readFileSync(`./users/${username}.json`))
-        fileArr.forEach(urlObj => {
-            if (urlObj.originUrl === originUrl) {
-                fileArr.splice(fileArr.indexOf(urlObj),1)
-                fs.writeFileSync(`./users/${username}.json`, JSON.stringify(fileArr))
-                used = true
-            }
-        })
+async function testOriginUrlInUser(originUrl, user){
+    const used = await Url.findOne({originUrl, username: user.username})
+    if (used){
+        const indexOfUsedUrl = await user.urls.indexOf(used.customUrl)
+        console.log(indexOfUsedUrl);
+        return indexOfUsedUrl
     }
-    if (used) return true
-    return false
 }
 
-function appendUrlObjToUser(urlObj, username){
-    const fileContentBuffer = fs.readFileSync(`./users/${username}.json`)
-    const fileContent = JSON.parse(fileContentBuffer)
-    fileContent.push(urlObj)
-    fs.writeFileSync(`./users/${username}.json`, JSON.stringify(fileContent))
+async function appendUrlToUser(customUrl, user){
+    await user.urls.addToSet(customUrl)
 }
 
-function createUrlObj(originUrl, customUrl){
+function createUrlData(originUrl, customUrl, username){
     let creationDate = new Date()
     let redirectCount = 0
-    return {originUrl, customUrl, creationDate, redirectCount}
+    const createdBy = username
+    const url = new Url({originUrl, customUrl, creationDate, redirectCount, createdBy})
+    url.save()
+}
+
+async function updateUrlData(originUrl, customUrl, username){
+    await Url.updateOne({originUrl, username}, {$set: {customUrl}})
+}
+function updateUrlInUser(newUrl, prevUrlindex, user){
+    user.urls.set(prevUrlindex, newUrl)
 }
 
 
