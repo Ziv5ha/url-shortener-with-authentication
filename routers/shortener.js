@@ -12,6 +12,7 @@ const AuthHandler = require('../middlewares/user-middleware')
 router.use(AuthHandler)
 router.post('/', async function(req, res, next){
     try {
+        console.log(req.cookies);
         let message = 'URL generated!'
         const {username} = req.cookies
         let {originUrl, customUrl} = req.body

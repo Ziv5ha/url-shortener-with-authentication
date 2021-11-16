@@ -12,7 +12,7 @@ router.use(AuthHandler)
 router.get('/', async (req, res, next) => {
     try {
         const {username} = req.cookies
-        const links = await Url.find({username})
+        const links = await Url.find({createdBy: username})
         res.send(links)
     } catch (error) {
         console.log(error)

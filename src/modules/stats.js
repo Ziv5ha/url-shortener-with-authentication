@@ -6,15 +6,14 @@ const { clearRender, createLogin, createNavHead, createElement, addChilds } = re
 export function renderS(){
     const app = document.getElementById('root')
     app.className = 'stats'
-    const username = document.getElementById('username').textContent
     clearRender()
     createNavHead(app)
-    createLogin(app, username)
-    generateStats(app, username)
+    createLogin(app, )
+    generateStats(app, )
 }
-async function generateStats(app, username){
+async function generateStats(app, ){
     createLoader()
-    const stats = await getStats(username)
+    const stats = await getStats()
     removeLoader()
     const statsElem = createElement('div', ['stats'])
     stats.forEach(urlObj => {
@@ -29,14 +28,9 @@ async function generateStats(app, username){
     app.appendChild(statsElem)
 }
 
-async function getStats(username){
+async function getStats(){
     try {
-        const stats = await axios.get(
-            `${serverUrl}stats/`, 
-            {headers:{
-                username,
-            }}
-        )
+        const stats = await axios.get(`${serverUrl}stats/`)
         return stats.data
     } catch (error) {
         console.log(error);
