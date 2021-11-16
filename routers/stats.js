@@ -5,13 +5,13 @@ const Url = require('../models/url-model')
 const express = require('express')
 const router = express.Router()
 router.use(express.json())
-const userHandler = require('../middlewares/user-middleware')
+const AuthHandler = require('../middlewares/user-middleware')
 
 
-router.use(userHandler)
+router.use(AuthHandler)
 router.get('/', async (req, res, next) => {
     try {
-        const {username} = req.headers
+        const {username} = req.cookies
         const links = await Url.find({username})
         res.send(links)
     } catch (error) {

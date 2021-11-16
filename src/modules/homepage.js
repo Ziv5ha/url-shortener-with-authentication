@@ -39,25 +39,73 @@ export function renderHP(){
 }
 
 export function createLogin(app, user = 'Guest'){
-    const loginDiv = createElement('div', ['login-div'])
-    const logInput = createElement('input', ['login-input'])
-    logInput.placeholder = 'Enter Username'
+    const userDiv = createElement('div', ['login-div'])
+
+    const signUpDiv = createElement('div', ['signup'])
+    const usernamesignUput = createElement('input', ['login-input'])
+    usernamesignUput.placeholder = 'Enter Username'
+    const passwordsignUput = createElement('input', ['login-input'])
+    passwordsignUput.placeholder = 'Enter Password'
+    const signBtn = createElement('button', ['login-btn'], '', 'Sign Up')
+    signUp(signBtn, usernamesignUput, passwordsignUput)
+
+    const loginDiv = createElement('div', ['login'])
+    const usernameLogInput = createElement('input', ['login-input'])
+    usernameLogInput.placeholder = 'Enter Username'
+    const passwordLogInput = createElement('input', ['login-input'])
+    passwordLogInput.placeholder = 'Enter Password'
     const logBtn = createElement('button', ['login-btn'], '', 'Log In')
+    logIn(logBtn, usernameLogInput, passwordLogInput)
 
-    const welcome = createElement('p', ['user'], '', 'welcome ')
-    const username = createElement('span', ['user'], 'username', user)
-    setUser(logBtn, logInput, username)
+    const welcome = createElement('p', ['user'], 'server-msg', 'Please sign in ')
 
-    welcome.appendChild(username)
-    addChilds(loginDiv, [logInput, logBtn, welcome])
-    app.appendChild(loginDiv)
+    addChilds(signUpDiv, [usernamesignUput, passwordsignUput, signBtn])
+    addChilds(loginDiv, [usernameLogInput, passwordLogInput, logBtn])
+    addChilds(userDiv, [signUpDiv, loginDiv, welcome])
+
+    app.appendChild(userDiv)
 }
-const setUser = (logBtn, logInput, usernameSpan) => {
-    logBtn.addEventListener('click', () => {
-        usernameSpan.textContent = logInput.value
-        const app = document.getElementById("root")
-        if (app.classList.contains('stats')){
-            renderS()
+const logIn = (logBtn, username, password) => {
+    logBtn.addEventListener('click', async () => {
+        try {
+            const response = await axios.post(
+                `${serverUrl}sign/in`, 
+                {
+                    "username": username.value, 
+                    "password": password.value
+                }
+            )
+            const msg = document.getElementById('server-msg')
+            msg.innerText = 'Welcome '
+            const usernameSpan = createElement('span', ['user'], 'username', username.value)
+            msg.appendChild(usernameSpan)
+            username.value = ''
+            password.value = ''
+            const app = document.getElementById("root")
+            if (app.classList.contains('stats')){
+                renderS()
+            }
+        } catch (error) {
+            document.getElementById('server-msg').textContent = error
+        }
+    })
+}
+const signUp = (signBtn, username, password) => {
+    signBtn.addEventListener('click', async () => {
+        try {
+            const response = await axios.post(
+                `${serverUrl}sign/up`, 
+                {
+                    "username": username.value, 
+                    "password": password.value
+                }
+            )
+            username.textContent = ''
+            password.textContent = ''
+            document.getElementById('server-msg').textContent = 'User created, please log in'
+        } catch (error) {
+            console.log(error.response);
+            document.getElementById('server-msg').textContent = error
         }
     })
 }

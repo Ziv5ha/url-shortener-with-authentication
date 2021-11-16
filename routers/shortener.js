@@ -6,14 +6,14 @@ const User = require('../models/user-model')
 const express = require('express')
 const router = express.Router()
 router.use(express.json())
-const userHandler = require('../middlewares/user-middleware')
+const AuthHandler = require('../middlewares/user-middleware')
 
 
-router.use(userHandler)
+router.use(AuthHandler)
 router.post('/', async function(req, res, next){
     try {
         let message = 'URL generated!'
-        const username = req.headers.username
+        const {username} = req.cookies
         let {originUrl, customUrl} = req.body
         if (!customUrl) customUrl = await randomUrl()
         if (await testShortUrl(customUrl)) {

@@ -21,7 +21,7 @@ async function generateStats(app, username){
         const entry = createElement('div', ['stat-entry'])
         const originUrl = createElement('div', [], '', `Original URL: ${urlObj.originUrl}`)
         const customUrl = createElement('div', [], '', `Custom URL: ${serverUrl}r/${urlObj.customUrl}`)
-        const redirectCount = createElement('div', [], '', `used ${urlObj.redirectCount} times`)
+        const redirectCount = createElement('div', [], '', `used ${urlObj.redirectCounter} times`)
         const creationDate = createElement('div', [], '', `Created on: ${urlObj.creationDate}`)
         addChilds(entry, [originUrl, customUrl, redirectCount, creationDate])
         statsElem.appendChild(entry)

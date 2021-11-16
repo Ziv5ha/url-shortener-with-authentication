@@ -4,6 +4,7 @@ mongoose.connect(process.env.DATABASE).then(() => {console.log('DB connected')})
 
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require('cookie-parser')
 const app = express();
 const shortenerRouter = require('./routers/shortener')
 const redirect = require('./routers/redirect')
@@ -13,6 +14,7 @@ const errorHandler = require('./middlewares/error-handler')
 // const userHandler = require('./middlewares/user-middleware')
 
 app.use(cors());
+app.use(cookieParser())
 
 app.use('/sign', userRouter)
 app.use('/r', redirect)
